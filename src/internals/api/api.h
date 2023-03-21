@@ -2,7 +2,7 @@
 
 #include "napi/list.h"
 
-#include "core.h"
+#include "internals/core.h"
 
 #include <pthread.h>
 #include <sys/socket.h>

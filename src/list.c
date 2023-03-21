@@ -81,6 +81,11 @@ NP_List_Item np_list_item(void *value)
 
 void np_list_destroy(NP_List *list)
 {size_t i;
+    if (list == NULL)
+    {
+        return;
+    }
+
     for (i = 0; i < list->__items_size; ++i)
     {
         free(list->__items_pool[i]);

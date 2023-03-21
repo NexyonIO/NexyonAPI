@@ -16,4 +16,7 @@ extern int32_t __np_log(const char *file, uint32_t line, const char *func, uint8
 extern const char *np_log_prefix(const char *prefix);
 
 extern int32_t np_main(int32_t argc, char **argv);
+extern int32_t np_destroy();
+
+extern const char *np_return_value_meaning(int32_t value);
 

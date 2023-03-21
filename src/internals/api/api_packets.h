@@ -22,3 +22,20 @@ typedef struct
     uint32_t version_id;
 } NP_PACKET_HANDSHAKE;
 
+typedef struct
+{
+    NP_PACKET_HEADER;
+    uint64_t service_id;
+    int32_t result;
+    uint8_t flags;
+    uint32_t name_len;
+    char name[256]; // max service name length is 256 bytes
+} NP_PACKET_SERVICE_REGISTER;
+
+typedef struct
+{
+    NP_PACKET_HEADER;
+    uint64_t service_id;
+    int32_t result;
+} NP_PACKET_SERVICE_UNREGISTER;
+

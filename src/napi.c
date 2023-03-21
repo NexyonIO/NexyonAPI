@@ -1,16 +1,21 @@
 #include "napi/core.h"
 #include "napi/list.h"
+#include "napi/services.h"
 
-#include "internals/api_protocol.h"
-#include "internals/api.h"
+#include "internals/result_codes.h"
+#include "internals/services/services.h"
+#include "internals/api/api_protocol.h"
+#include "internals/api/api.h"
 #include "internals/core.h"
 
+#include <pthread.h>
 #include <unistd.h>
 #include <sys/socket.h>
 
+pthread_t __np_thread;
 struct NP_API_Conn *__api_conn;
 
-extern int32_t np_main(int32_t argc, char **argv)
+int32_t np_main(int32_t argc, char **argv)
 {int32_t ret;
     np_log_prefix("napi");
 
@@ -25,23 +30,74 @@ extern int32_t np_main(int32_t argc, char **argv)
 
     if (ret != NP_PROTOCOL_SUCCESS)
     {
-        np_log(NP_ERROR, "np_main: failed to handshake (%s)", PROTOCOL_RESULT_STRINGS[ret]);
+        np_log(NP_ERROR, "np_main: failed to handshake (%s)", np_return_value_meaning(ret));
         goto err;
     }
 
-    char buff[1];
-    while (__api_conn->connected)
-    {
-        
-        
-        usleep(50 * 1000);
-    }
+    np_log(NP_INFO, "np_main: initializing services");
+    np_intr_services_client_init();
+
+    // unblocking server thread
+    np_intr_server_handler_unblock();
 
     goto end;
 err:
-    np_intr_api_free(__api_conn);
+    np_destroy();
     return 1;
 end:
     return 0;
 }
 
+void np_intr_server_handler_block()
+{
+    np_log(NP_INFO, "server_handler_block: blocking server handler thread");
+    pthread_cancel(__np_thread);
+}
+
+void np_intr_server_handler_unblock()
+{
+    np_log(NP_INFO, "server_handler_unblock: unblocking server handler thread");
+    pthread_create(&__np_thread, NULL, &np_intr_server_handler, NULL);
+}
+
+void np_intr_server_handler(void *unused)
+{int32_t ret;
+    do
+    {
+        ret = np_intr_api_protocol_execute(__api_conn);
+
+        if (ret != NP_PROTOCOL_SUCCESS)
+        {
+            np_log(NP_WARN, "server_handler: failed to fetch packet (%s)", np_return_value_meaning(ret));
+        }
+
+        usleep(50 * 1000);
+    }
+    while (__api_conn->connected && ret == NP_PROTOCOL_SUCCESS);
+}
+
+int32_t np_destroy()
+{
+    if (__api_conn == NULL)
+    {
+        return 1;
+    }
+
+    np_intr_services_client_destroy();
+    np_intr_api_free(__api_conn);
+    np_intr_server_handler_block();
+
+    __api_conn = NULL;
+
+    return 0;
+}
+
+const char *np_return_value_meaning(int32_t value)
+{
+    if (value == 0x00)
+    {
+        return "success";
+    }
+
+    return NP_RESULT_STRINGS[value];
+}

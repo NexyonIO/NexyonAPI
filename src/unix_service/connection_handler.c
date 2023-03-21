@@ -1,9 +1,9 @@
 #include "napi/core.h"
 #include "napi/list.h"
 
-#include "internals/api_protocol.h"
-#include "internals/api.h"
-#include "service/connection_handler.h"
+#include "internals/api/api_protocol.h"
+#include "internals/api/api.h"
+#include "unix_service/connection_handler.h"
 
 #include <unistd.h>
 #include <pthread.h>
@@ -20,7 +20,7 @@ void np_service_connection_handler(void *ptr)
 
         if (ret != NP_PROTOCOL_SUCCESS)
         {
-            np_log(NP_WARN, "connection_handler[%d]: failed to fetch packet (%s)", conn->pool_id, PROTOCOL_RESULT_STRINGS[ret]);
+            np_log(NP_WARN, "connection_handler[%d]: failed to fetch packet (%s)", conn->pool_id, np_return_value_meaning(ret));
             goto destroy;   
         }
 

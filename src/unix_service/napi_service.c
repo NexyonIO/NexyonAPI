@@ -1,8 +1,10 @@
+#include "internals/core.h"
 #include "napi/core.h"
 #include "napi/list.h"
 
-#include "service/connection_handler.h"
-#include "internals/api.h"
+#include "unix_service/connection_handler.h"
+#include "internals/services/services.h"
+#include "internals/api/api.h"
 
 #include <signal.h>
 #include <pthread.h>
@@ -27,6 +29,9 @@ int main(void)
 
     np_log(NP_INFO, "main: creating socket server");
     api = np_intr_api_create();
+
+    np_log(NP_INFO, "main: initializing services");
+    np_intr_services_server_init();
     
     running = true;
     while (running)
@@ -43,6 +48,7 @@ int main(void)
         );
     }
 
+    np_intr_services_server_destroy();
     np_intr_api_free(api);
     return 0;
 }

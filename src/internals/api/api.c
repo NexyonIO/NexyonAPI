@@ -1,7 +1,9 @@
-#include "api.h"
-#include "internals/core.h"
 #include "napi/core.h"
 #include "napi/list.h"
+
+#include "internals/services/services.h"
+#include "internals/api/api.h"
+#include "internals/core.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -163,9 +165,14 @@ void np_intr_api_free(void *conn)
         return;
     }
     else if (id == 2)
-    {   // NP_API_conn   
-        np_log(NP_DEBUG, "api_free: freeing NP_API_conn");
+    {   // NP_API_Conn   
+        np_log(NP_DEBUG, "api_free: freeing NP_API_Conn");
         struct NP_API_Conn *api = (struct NP_API_Conn*)conn;
+
+        if (api->side)
+        {   // server side connection
+            np_intr_services_unregister_conn(api);
+        }
         
         close(api->fd);
         free(api->client_sockaddr);
