@@ -18,7 +18,7 @@ enum NP_SERVICES_RESPONSE
 
 enum NP_SERVICE_EVENTS
 {
-    NP_SERVICE_NEW_MESSAGE,
+    NP_SERVICE_EVENT_MESSAGE = 0x00,
 };
 
 // Hardcoded IDs for internal napi services.
@@ -29,14 +29,9 @@ enum NP_SERVICES
     NP_SERVICE_SWM = 0xff0
 };
 
-struct NP_Service_Message
-{
-    uint64_t source;
-    uint8_t *message;
-};
-
 struct NP_Service_Event
 {
+    uint64_t source;
     int32_t type;
     void *value;
 };
@@ -44,7 +39,7 @@ struct NP_Service_Event
 typedef struct NP_Service_Message NP_Service_Message;
 typedef struct NP_Service_Event NP_Service_Event;
 
-extern int32_t np_service_send_message(uint64_t service_id, NP_Service_Message message);
+extern int32_t np_service_send_event(uint64_t service_id, NP_Service_Event *event);
 // note: max service name is 256 bytes long
 // todo: flags unused
 extern int32_t np_service_register(uint64_t service_id, const char *name, uint8_t flags, void(*events_callback)(NP_Service_Event));

@@ -40,6 +40,8 @@ int32_t np_intr_api_protocol_execute(struct NP_API_Conn *conn)
         { ret = np_intr_api_protocol_services_register_recv(conn, (NP_PACKET_SERVICE_REGISTER*)&packet); break; }
     case NP_PACKET_ID_SERVICE_UNREGISTER:
         { ret = np_intr_api_protocol_services_unregister_recv(conn, (NP_PACKET_SERVICE_UNREGISTER*)&packet); break; }
+    case NP_PACKET_ID_SERVICE_EVENT:
+        { ret = np_intr_api_protocol_services_event_recv(conn, (NP_PACKET_SERVICE_EVENT*)&packet); break; }
     }
     NP_API_RETURN(ret);
 

@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <assert.h>
 
+bool wait = false;
 static const char *log_prefixes[] = {
     [ NP_INFO ] = "%sINFO [(%s) %s:%d] %s%s",
     [ NP_DEBUG ] = "%sDEBUG [(%s) %s:%d] %s%s",
@@ -29,7 +30,15 @@ const char *np_log_prefix(const char *prefix)
 
 int32_t __np_log(const char *file, uint32_t line, const char *func, uint8_t level, const char *fmt, ...)
 {
-    assert(level < NP_LOG_LEVELS_COUNT);
+    //while (wait);
+    wait = true;
+
+    if (level >= NP_LOG_LEVELS_COUNT)
+    {
+        wait = false;
+        assert(level < NP_LOG_LEVELS_COUNT);
+    }
+    
     FILE *out = stdout;
     int32_t len = 0;
     const char *color = "\0";
@@ -76,9 +85,11 @@ int32_t __np_log(const char *file, uint32_t line, const char *func, uint8_t leve
     // send abort signal on panic log level
     if (level == NP_PANIC)
     {
+        wait = false;
         raise(SIGABRT);
     }
 
+    wait = false;
     return len;
 }
 

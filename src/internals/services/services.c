@@ -3,6 +3,7 @@
 #include "napi/services.h"
 
 #include "internals/api/api.h"
+#include "internals/api/api_protocol.h"
 #include "internals/services/services.h"
 
 #include <string.h>
@@ -14,7 +15,7 @@ struct NP_Service
     uint64_t service_id;
     const char name[256];
     uint8_t flags;
-    int64_t pool_id;
+    struct NP_API_Conn *conn_ptr;
 };
 
 NP_List *services;
@@ -50,7 +51,7 @@ int32_t np_intr_services_register(struct NP_API_Conn *conn, uint64_t service_id,
     srv = malloc(sizeof(struct NP_Service));
     srv->service_id = service_id;
     srv->flags = flags;
-    srv->pool_id = conn->pool_id;
+    srv->conn_ptr = conn;
     memcpy((char*)srv->name, name, 256);
     np_list_append(services, np_list_item(srv));
 
@@ -96,7 +97,7 @@ void np_intr_services_unregister_conn(struct NP_API_Conn *conn)
     np_list_foreach(services, item)
     {
         srv = (struct NP_Service*)(*item)->value;
-        if (srv->pool_id == conn->pool_id)
+        if (srv->conn_ptr == conn)
         {
             np_list_remove(services, (*item)->id);
             service_id = srv->service_id;
@@ -109,3 +110,35 @@ void np_intr_services_unregister_conn(struct NP_API_Conn *conn)
 
     services_busy = false;
 }
+
+int32_t np_intr_services_server_accept_event(struct NP_API_Conn *conn, NP_PACKET_SERVICE_EVENT *packet)
+{struct NP_Service *srv; NP_Service_Event event;
+    // wait until the services manager would not be busy
+    while (services_busy);
+    services_busy = true;
+
+    // trying to find the service
+    np_list_foreach(services, item)
+    {
+        srv = (struct NP_Service*)(*item)->value;
+        if (srv->service_id == packet->service_id)
+        {
+            break;
+        }
+        srv = NULL;
+    }
+
+    if (srv == NULL)
+    {
+        return NP_SERVICE_NOT_FOUND;
+    }
+
+    event.source = packet->service_id_source;
+    event.type = packet->event;
+    event.value = packet->message;
+    np_intr_api_protocol_services_event_send(srv->conn_ptr, packet->service_id, &event);
+
+    services_busy = false;
+    return NP_SERVICE_SUCCESS;
+}
+

@@ -14,23 +14,41 @@
 
 pthread_t __np_thread;
 struct NP_API_Conn *__api_conn;
+bool initialized = false;
 
 int32_t np_main(int32_t argc, char **argv)
 {int32_t ret;
-    np_log_prefix("napi");
+    if (!initialized)
+    {
+        np_log_prefix("napi");
 
-    np_log(NP_INFO, "running on:");
-    np_log(NP_INFO, "\tkernel: %s", np_intr_platform_info(NP_INTR_KERNEL_INFO));
-    np_log(NP_INFO, "\thardware: %s", np_intr_platform_info(NP_INTR_HARDWARE_INFO));
+        np_log(NP_INFO, "running on:");
+        np_log(NP_INFO, "\tkernel: %s", np_intr_platform_info(NP_INTR_KERNEL_INFO));
+        np_log(NP_INFO, "\thardware: %s", np_intr_platform_info(NP_INTR_HARDWARE_INFO));
+
+        initialized = true;
+    }
+    else
+    {
+        np_log(NP_INFO, "np_main: reinitializing");
+    }
 
     __api_conn = np_intr_api_connect("napid_unix_socket.client");
 
-    np_log(NP_DEBUG, "np_main: attempting to handshake");
-    ret = np_intr_api_protocol_handshake_send(__api_conn);
-
-    if (ret != NP_PROTOCOL_SUCCESS)
+    if (__api_conn != NULL)
     {
-        np_log(NP_ERROR, "np_main: failed to handshake (%s)", np_return_value_meaning(ret));
+        np_log(NP_DEBUG, "np_main: attempting to handshake");
+        ret = np_intr_api_protocol_handshake_send(__api_conn);
+
+        if (ret != NP_PROTOCOL_SUCCESS)
+        {
+            np_log(NP_ERROR, "np_main: failed to handshake (%s)", np_return_value_meaning(ret));
+            goto err;
+        }
+    }
+    else 
+    {
+        np_log(NP_ERROR, "np_main: failed connect to the napid");
         goto err;
     }
 
@@ -48,32 +66,14 @@ end:
     return 0;
 }
 
-void np_intr_server_handler_block()
+bool np_alive()
 {
-    np_log(NP_INFO, "server_handler_block: blocking server handler thread");
-    pthread_cancel(__np_thread);
-}
-
-void np_intr_server_handler_unblock()
-{
-    np_log(NP_INFO, "server_handler_unblock: unblocking server handler thread");
-    pthread_create(&__np_thread, NULL, &np_intr_server_handler, NULL);
-}
-
-void np_intr_server_handler(void *unused)
-{int32_t ret;
-    do
+    if (__api_conn == NULL)
     {
-        ret = np_intr_api_protocol_execute(__api_conn);
+        return false;
+    } 
 
-        if (ret != NP_PROTOCOL_SUCCESS)
-        {
-            np_log(NP_WARN, "server_handler: failed to fetch packet (%s)", np_return_value_meaning(ret));
-        }
-
-        usleep(50 * 1000);
-    }
-    while (__api_conn->connected && ret == NP_PROTOCOL_SUCCESS);
+    return __api_conn->connected;
 }
 
 int32_t np_destroy()
@@ -101,3 +101,35 @@ const char *np_return_value_meaning(int32_t value)
 
     return NP_RESULT_STRINGS[value];
 }
+
+void np_intr_server_handler_block()
+{
+    np_log(NP_INFO, "server_handler_block: blocking server handler thread");
+    pthread_cancel(__np_thread);
+}
+
+void np_intr_server_handler_unblock()
+{
+    np_log(NP_INFO, "server_handler_unblock: unblocking server handler thread");
+    pthread_create(&__np_thread, NULL, &np_intr_server_handler, NULL);
+}
+
+void np_intr_server_handler(void *unused)
+{int32_t ret;
+    do
+    {
+        ret = np_intr_api_protocol_execute(__api_conn);
+
+        if (ret != NP_PROTOCOL_SUCCESS)
+        {
+            np_log(NP_WARN, "server_handler: failed to fetch packet (%s)", np_return_value_meaning(ret));
+            np_destroy();
+            return;
+        }
+
+        usleep(50 * 1000);
+    }
+    while (__api_conn->connected && ret == NP_PROTOCOL_SUCCESS);
+}
+
+

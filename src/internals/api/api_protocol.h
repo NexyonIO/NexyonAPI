@@ -1,5 +1,7 @@
 #pragma once
 
+#include "napi/services.h"
+
 #include "internals/api/api_packets.h"
 #include "internals/api/api.h"
 
@@ -11,6 +13,7 @@
 #define NP_API_FETCH0_PACKET(conn, packet) read(conn->fd, (uint8_t*)packet, NP_PACKET_HEADER_SIZE)
 #define NP_API_FETCH1_PACKET(conn, packet) read(conn->fd, (uint8_t*)packet+NP_PACKET_HEADER_SIZE, packet->buffer_size)
 #define NP_API_INIT_PACKET(packet, id) do { packet.magic = NP_API_MAGIC; packet.packet_id = id; packet.buffer_size = sizeof(packet)-NP_PACKET_HEADER_SIZE; } while (0)
+#define NP_API_INIT_PACKET_NLEN(packet, id, len) do { packet.magic = NP_API_MAGIC; packet.packet_id = id; packet.buffer_size = sizeof(packet)+len-NP_PACKET_HEADER_SIZE; } while (0)
 
 #define NP_API_RESPONSES_PREFIX 0xfa
 // prefix - fa
@@ -30,6 +33,7 @@ enum NP_INTR_API_PACKETS
     NP_PACKET_ID_HANDSHAKE = 0x01,
     NP_PACKET_ID_SERVICE_REGISTER = 0x02,
     NP_PACKET_ID_SERVICE_UNREGISTER = 0x03,
+    NP_PACKET_ID_SERVICE_EVENT = 0x04,
 };
 
 /*
@@ -53,6 +57,13 @@ Services register (serverbound):
 Services unregister (serverbound):
     12-19: service id
     20-23: result
+
+Services event recv (clientbound):
+Services event send (serverbound):
+    12-19:  service id
+    20-31:  service id source
+    32-35:  event
+    36-...: message
 */
 
 int32_t np_intr_api_protocol_client_handle(struct NP_API_Conn *conn, int32_t value);
@@ -70,4 +81,7 @@ int32_t np_intr_api_protocol_services_register_recv(struct NP_API_Conn *conn, NP
 
 int32_t np_intr_api_protocol_services_unregister_send(struct NP_API_Conn *conn, uint64_t service_id);
 int32_t np_intr_api_protocol_services_unregister_recv(struct NP_API_Conn *conn, NP_PACKET_SERVICE_UNREGISTER *packet);
+
+int32_t np_intr_api_protocol_services_event_send(struct NP_API_Conn *conn, uint64_t service_id, NP_Service_Event *event);
+int32_t np_intr_api_protocol_services_event_recv(struct NP_API_Conn *conn, NP_PACKET_SERVICE_EVENT *packet);
 

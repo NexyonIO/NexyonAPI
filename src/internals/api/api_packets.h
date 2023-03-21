@@ -8,11 +8,11 @@
                 uint32_t packet_id; \
                 uint32_t buffer_size
 
-// note: max packet size is 512 bytes
+// note: max packet size is 1024 bytes
 typedef struct
 {
     NP_PACKET_HEADER;
-    uint8_t buffer[512];
+    uint8_t buffer[1024];
 } NP_PACKET;
 
 typedef struct
@@ -38,4 +38,13 @@ typedef struct
     uint64_t service_id;
     int32_t result;
 } NP_PACKET_SERVICE_UNREGISTER;
+
+typedef struct
+{
+    NP_PACKET_HEADER;
+    uint64_t service_id;
+    uint64_t service_id_source;
+    int32_t event;
+    char message[512];
+} NP_PACKET_SERVICE_EVENT;
 

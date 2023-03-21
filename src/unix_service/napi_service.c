@@ -6,6 +6,8 @@
 #include "internals/services/services.h"
 #include "internals/api/api.h"
 
+#include <execinfo.h>
+#include <stdlib.h>
 #include <signal.h>
 #include <pthread.h>
 
@@ -26,6 +28,7 @@ int main(void)
     signal(SIGKILL, signal_handler);
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
+    signal(SIGSEGV, signal_handler);
 
     np_log(NP_INFO, "main: creating socket server");
     api = np_intr_api_create();
@@ -54,7 +57,7 @@ int main(void)
 }
 
 void signal_handler(int type)
-{
+{void *array[32]; char **strings; int size; size_t i;
     if (type == SIGINT)
     {
         np_log(NP_DEBUG, "SIGINT: might be ctrl + c");
@@ -66,6 +69,25 @@ void signal_handler(int type)
     else if (type == SIGTERM)
     {
         np_log(NP_DEBUG, "SIGTERM: terminating process");
+    }
+    else if (type == SIGSEGV)
+    {
+        np_log(NP_ERROR, "SIGSEGV: segmentation fault!");
+        
+        // print stack trace for debugging
+        size = backtrace(array, 32);
+        strings = backtrace_symbols(array, size);
+        if (strings != NULL)
+        {
+            np_log(NP_DEBUG, "SIGSEGV: obtained %d stack frames", size);
+            for (i = 0; i < size; ++i)
+            {
+                np_log(NP_DEBUG, "SIGSEGV:\t%s", strings[i]);
+            }
+        }
+
+        free(strings);
+        abort();
     }
 
     np_intr_api_free(api);

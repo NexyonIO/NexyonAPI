@@ -2,7 +2,7 @@
 
 #include <napi/core.h>
 
-#define np_list_foreach(list, var) if(list != NULL) if (list->__items_size > 0) for (NP_List_Item **var = list->__items_pool; var < list->__items_pool+list->__items_size; ++var)
+#define np_list_foreach(list, var) if(list != NULL) if (list->__items_size > 0) for (NP_List_Item **var = list->__items_pool; var < list->__items_pool+list->__items_size && list->__items_size > 0; ++var)
 
 struct NP_List_Item
 {
