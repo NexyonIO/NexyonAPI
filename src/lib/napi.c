@@ -2,11 +2,11 @@
 #include "napi/list.h"
 #include "napi/services.h"
 
-#include "internals/result_codes.h"
-#include "internals/services/services.h"
-#include "internals/api/api_protocol.h"
-#include "internals/api/api.h"
-#include "internals/core.h"
+#include "lib/internals/result_codes.h"
+#include "lib/internals/services/services.h"
+#include "lib/internals/api/api_protocol.h"
+#include "lib/internals/api/api.h"
+#include "lib/internals/core.h"
 
 #include <pthread.h>
 #include <unistd.h>
@@ -20,7 +20,8 @@ int32_t np_main(int32_t argc, char **argv)
 {int32_t ret;
     if (!initialized)
     {
-        np_log_prefix("napi");
+        if (argc > 0)
+            np_log_prefix(argv[0]);
 
         np_log(NP_INFO, "running on:");
         np_log(NP_INFO, "\tkernel: %s", np_intr_platform_info(NP_INTR_KERNEL_INFO));
@@ -33,7 +34,7 @@ int32_t np_main(int32_t argc, char **argv)
         np_log(NP_INFO, "np_main: reinitializing");
     }
 
-    __api_conn = np_intr_api_connect("napid_unix_socket.client");
+    __api_conn = np_intr_api_connect(".napid_unix_socket.client");
 
     if (__api_conn != NULL)
     {
@@ -83,9 +84,10 @@ int32_t np_destroy()
         return 1;
     }
 
+    np_intr_server_handler_block();
     np_intr_services_client_destroy();
     np_intr_api_free(__api_conn);
-    np_intr_server_handler_block();
+    unlink(".napid_unix_socket.client");
 
     __api_conn = NULL;
 

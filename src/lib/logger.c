@@ -1,7 +1,7 @@
 #include "napi/core.h"
 
-#include "internals/ansi.h"
-#include "internals/core.h"
+#include "lib/internals/ansi.h"
+#include "lib/internals/core.h"
 
 #include <signal.h>
 #include <stdio.h>
@@ -19,7 +19,7 @@ static const char *log_prefixes[] = {
 
 const char *np_log_prefix(const char *prefix)
 {
-    static const char *log_prefix = NULL;
+    static const char *log_prefix = "napi";
     if (prefix != NULL)
     {
         log_prefix = prefix;

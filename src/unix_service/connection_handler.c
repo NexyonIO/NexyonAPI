@@ -1,8 +1,8 @@
 #include "napi/core.h"
 #include "napi/list.h"
 
-#include "internals/api/api_protocol.h"
-#include "internals/api/api.h"
+#include "lib/internals/api/api_protocol.h"
+#include "lib/internals/api/api.h"
 #include "unix_service/connection_handler.h"
 
 #include <unistd.h>

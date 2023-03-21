@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 //Regular text
 #define ANSI_BLK "\e[0;30m"
 #define ANSI_RED "\e[0;31m"
@@ -73,3 +75,4 @@
 //Reset
 #define ANSI_COLOR_RESET "\e[0m"
 
+bool np_intr_ansi_support();

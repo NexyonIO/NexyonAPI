@@ -2,8 +2,8 @@
 
 #include "napi/services.h"
 
-#include "internals/api/api_packets.h"
-#include "internals/api/api.h"
+#include "lib/internals/api/api_packets.h"
+#include "lib/internals/api/api.h"
 
 // stands for 'napi' in ascii
 #define NP_API_MAGIC 0x6E617069

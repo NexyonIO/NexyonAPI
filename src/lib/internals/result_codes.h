@@ -1,7 +1,8 @@
 #pragma once
 
 #include "napi/services.h"
-#include "internals/api/api_protocol.h"
+
+#include "lib/internals/api/api_protocol.h"
 
 static const char *NP_RESULT_STRINGS[] =
 {

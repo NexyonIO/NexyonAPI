@@ -1,7 +1,7 @@
-#include "internals/api/api.h"
-#include "internals/api/api_protocol.h"
-#include "internals/api/api_packets.h"
-#include "internals/services/services.h"
+#include "lib/internals/api/api.h"
+#include "lib/internals/api/api_protocol.h"
+#include "lib/internals/api/api_packets.h"
+#include "lib/internals/services/services.h"
 
 #include "napi/core.h"
 #include "napi/services.h"

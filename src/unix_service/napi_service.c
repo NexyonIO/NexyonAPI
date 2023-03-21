@@ -1,11 +1,12 @@
-#include "internals/core.h"
 #include "napi/core.h"
 #include "napi/list.h"
 
 #include "unix_service/connection_handler.h"
-#include "internals/services/services.h"
-#include "internals/api/api.h"
+#include "lib/internals/services/services.h"
+#include "lib/internals/api/api.h"
+#include "lib/internals/core.h"
 
+#include <unistd.h>
 #include <execinfo.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -46,11 +47,12 @@ int main(void)
         pthread_create(
             &conn->conn_thread,
             NULL,
-            np_service_connection_handler,
+            &np_service_connection_handler,
             conn
         );
     }
 
+    np_log(NP_DEBUG, "main: cleaning up");
     np_intr_services_server_destroy();
     np_intr_api_free(api);
     return 0;
@@ -90,9 +92,7 @@ void signal_handler(int type)
         abort();
     }
 
-    np_intr_api_free(api);
-    api = NULL;
-
     running = false;
+    close(api->fd);
 }
 

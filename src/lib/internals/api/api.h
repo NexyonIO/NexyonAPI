@@ -2,14 +2,14 @@
 
 #include "napi/list.h"
 
-#include "internals/core.h"
+#include "lib/internals/core.h"
 
 #include <pthread.h>
 #include <sys/socket.h>
 
 // 3 sec tiemout
 #define NP_API_TIMEOUT 3000
-#define NP_SOCKET_PATH "napi_unix_sock.server"
+#define NP_SOCKET_PATH "/tmp/napid_unix_sock.server"
 
 struct NP_API
 {

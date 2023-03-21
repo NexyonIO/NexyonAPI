@@ -1,8 +1,8 @@
 #include "napi/core.h"
 
-#include "internals/api/api_packets.h"
-#include "internals/api/api_protocol.h"
-#include "internals/core.h"
+#include "lib/internals/api/api_packets.h"
+#include "lib/internals/api/api_protocol.h"
+#include "lib/internals/core.h"
 
 #include <unistd.h>
 #include <stdint.h>

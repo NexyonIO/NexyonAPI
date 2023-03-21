@@ -15,7 +15,6 @@ enum NP_INTR_PLATFORM_KEYS
     NP_INTR_HARDWARE_INFO,
 };
 
-bool np_intr_ansi_support();
 const char *np_intr_platform_info(uint8_t type);
 
 void np_intr_server_handler_block();

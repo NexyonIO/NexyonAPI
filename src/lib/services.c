@@ -2,9 +2,9 @@
 #include "napi/core.h"
 #include "napi/list.h"
 
-#include "internals/core.h"
-#include "internals/api/api_protocol.h"
-#include "internals/services/services.h"
+#include "lib/internals/core.h"
+#include "lib/internals/api/api_protocol.h"
+#include "lib/internals/services/services.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -38,7 +38,11 @@ void np_intr_services_accept_event(uint64_t service_id, NP_Service_Event *event)
         nsh = (struct NP_Service_Callback*)(*item)->value;
         if (nsh->service_id == service_id)
         {
-            nsh->events_callback(*event);
+            if (nsh->events_callback != NULL)
+            {
+                nsh->events_callback(*event);
+            }
+
             break;
         }
     }

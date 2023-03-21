@@ -1,9 +1,9 @@
 #include "napi/core.h"
 #include "napi/list.h"
 
-#include "internals/services/services.h"
-#include "internals/api/api.h"
-#include "internals/core.h"
+#include "lib/internals/services/services.h"
+#include "lib/internals/api/api.h"
+#include "lib/internals/core.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -30,7 +30,7 @@ struct NP_API *np_intr_api_create()
         goto err;
     }
 
-    np_log(NP_DEBUG, "api_create: binding socket");
+    np_log(NP_DEBUG, "api_create: binding socket at %s", NP_SOCKET_PATH);
 
     api->sockaddr->sun_family = AF_UNIX;   
     strcpy(api->sockaddr->sun_path, NP_SOCKET_PATH); 
@@ -72,7 +72,7 @@ struct NP_API_Conn *np_intr_api_connect(const char *client_path)
         goto err;
     }
 
-    np_log(NP_DEBUG, "api_connect: binding socket");
+    np_log(NP_DEBUG, "api_connect: binding socket at %s", client_path);
 
     conn->client_sockaddr->sun_family = AF_UNIX;   
     strcpy(conn->client_sockaddr->sun_path, client_path); 

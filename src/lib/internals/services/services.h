@@ -2,8 +2,8 @@
 
 #include "napi/services.h"
 
-#include "internals/api/api_packets.h"
-#include "internals/api/api.h"
+#include "lib/internals/api/api_packets.h"
+#include "lib/internals/api/api.h"
 
 // server side
 int32_t np_intr_services_register(struct NP_API_Conn *conn, uint64_t service_id, const char *name, uint8_t flags);
